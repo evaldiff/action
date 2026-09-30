@@ -21,6 +21,7 @@ RUN_ID = os.environ.get("ED_RUN_ID", "").strip()
 MODEL = os.environ.get("ED_MODEL", "gpt-4o-mini")
 ENDPOINT = os.environ.get("ED_MODEL_URL", "").strip() or "https://api.openai.com/v1"
 MODEL_KEY = os.environ.get("ED_MODEL_KEY", "")
+ALLOW_LOCAL = os.environ.get("ED_ALLOW_LOCAL", "false").strip().lower() in ("1", "true", "yes")
 THRESHOLD = float(os.environ.get("ED_THRESHOLD", "0.8") or 0)
 TIMEOUT = int(os.environ.get("ED_TIMEOUT", "600") or 600)
 FAIL_ON_REGRESS = os.environ.get("ED_FAIL_ON_REGRESS", "false").strip().lower() in ("1", "true", "yes")
@@ -92,6 +93,7 @@ def main() -> int:
                 "endpoint": ENDPOINT,
                 "api_key": MODEL_KEY,
                 "threshold": THRESHOLD,
+                "allow_local_endpoints": ALLOW_LOCAL,
             },
         )
         run_id = r["id"]

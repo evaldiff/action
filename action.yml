@@ -38,6 +38,12 @@ inputs:
       OPENAI_API_KEY env vars.
     required: false
     default: ''
+  allow_local:
+    description: >
+      'true = allow model_url to point at private/loopback addresses
+      (self-hosted model servers). Leave false for public APIs.'
+    required: false
+    default: 'false'
   threshold:
     description: >
       Minimum acceptable pass rate (0-1) for the run to pass the gate.
@@ -74,6 +80,7 @@ runs:
         ED_MODEL: ${{ inputs.model }}
         ED_MODEL_URL: ${{ inputs.model_url }}
         ED_MODEL_KEY: ${{ inputs.api_key_model }}
+        ED_ALLOW_LOCAL: ${{ inputs.allow_local }}
         ED_THRESHOLD: ${{ inputs.threshold }}
         ED_TIMEOUT: ${{ inputs.timeout_seconds }}
         ED_FAIL_ON_REGRESS: ${{ inputs.fail_on_regressions }}
