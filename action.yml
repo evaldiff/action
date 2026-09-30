@@ -1,0 +1,97 @@
+---
+name: Run evaldiff gate
+description: Create dataset + run on evaldiff.io, wait, report, and gate on pass rate.
+inputs:
+  api_url:
+    description: evaldiff API base URL.
+    required: false
+    default: https://api.evaldiff.io
+  api_key:
+    description: evaldiff API key (eval_...).
+    required: true
+  dataset_json:
+    description: >
+      Path to the dataset JSON file to evaluate. Either an array of cases or
+      {name, cases:[...]}. Required unless run_id is set.
+    required: false
+    default: ''
+  run_id:
+    description: >
+      Re-evaluate an EXISTING evaldiff run instead of uploading a new dataset
+      (e.g. a baseline from main). When set, dataset_json is ignored.
+    required: false
+    default: ''
+  model:
+    description: Model id to evaluate (e.g. gpt-4o-mini).
+    required: false
+    default: gpt-4o-mini
+  model_url:
+    description: >
+      OpenAI-compatible base URL for the model under test (e.g.
+      https://api.openai.com/v1, or a self-hosted / proxy endpoint).
+      Defaults to OpenAI.
+    required: false
+    default: ''
+  api_key_model:
+    description: >
+      API key for the model under test. Defaults to MODEL_API_KEY /
+      OPENAI_API_KEY env vars.
+    required: false
+    default: ''
+  threshold:
+    description: >
+      Minimum acceptable pass rate (0-1) for the run to pass the gate.
+      0 disables gating.
+    required: false
+    default: '0.8'
+  timeout_seconds:
+    description: Max seconds to wait for the run to finish.
+    required: false
+    default: '600'
+  fail_on_regressions:
+    description: 'true = also fail the gate when the run regressed vs baseline.'
+    required: false
+    default: 'false'
+outputs:
+  run_id:
+    description: The evaldiff run id that was evaluated.
+  passed:
+    description: 'true when the gate passed.'
+  pass_rate:
+    description: Pass rate of the run (0-1).
+  report:
+    description: Markdown report of the run.
+runs:
+  using: composite
+  steps:
+    - name: Run the evaldiff gate
+      shell: bash
+      env:
+        ED_API_URL: ${{ inputs.api_url }}
+        ED_API_KEY: ${{ inputs.api_key }}
+        ED_DATASET_JSON: ${{ inputs.dataset_json }}
+        ED_RUN_ID: ${{ inputs.run_id }}
+        ED_MODEL: ${{ inputs.model }}
+        ED_MODEL_URL: ${{ inputs.model_url }}
+        ED_MODEL_KEY: ${{ inputs.api_key_model }}
+        ED_THRESHOLD: ${{ inputs.threshold }}
+        ED_TIMEOUT: ${{ inputs.timeout_seconds }}
+        ED_FAIL_ON_REGRESS: ${{ inputs.fail_on_regressions }}
+        MODEL_API_KEY: ${{ env.MODEL_API_KEY }}
+        OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+      run: |
+        set -uo pipefail
+        if [ -z "${ED_MODEL_KEY:-}" ]; then
+          ED_MODEL_KEY="${MODEL_API_KEY:-${OPENAI_API_KEY:-}}"
+          export ED_MODEL_KEY
+        fi
+        [ -n "${ED_MODEL_KEY:-}" ] || {
+          echo "::error::No API key for the model under test. Set api_key_model or MODEL_API_KEY/OPENAI_API_KEY."
+          exit 1
+        }
+        python3 "$GITHUB_ACTION_PATH/python/run_gate.py"
+        st=$?
+        if [ "$st" -ne 0 ]; then
+          echo "::error::evaldiff gate FAILED (see report above). Exit $st."
+          exit "$st"
+        fi
