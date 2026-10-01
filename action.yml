@@ -40,8 +40,10 @@ inputs:
     default: ''
   allow_local:
     description: >
-      'true = allow model_url to point at private/loopback addresses
-      (self-hosted model servers). Leave false for public APIs.'
+      DEPRECATED (server-side since API 0.0.8): the SSRF policy for
+      private/loopback model_url values is now decided by the server
+      (EVALDIFF_ALLOW_LOCAL_ENDPOINTS env). Kept for backward
+      compatibility; the API ignores it.
     required: false
     default: 'false'
   threshold:

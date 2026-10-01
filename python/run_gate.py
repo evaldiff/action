@@ -93,7 +93,6 @@ def main() -> int:
                 "endpoint": ENDPOINT,
                 "api_key": MODEL_KEY,
                 "threshold": THRESHOLD,
-                "allow_local_endpoints": ALLOW_LOCAL,
             },
         )
         run_id = r["id"]

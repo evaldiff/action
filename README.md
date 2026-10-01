@@ -46,7 +46,7 @@ That's the whole integration. The action:
 | `model_url` | OpenAI | OpenAI-compatible base URL for the model under test |
 | `api_key_model` | env | key for the model under test (falls back to `MODEL_API_KEY` / `OPENAI_API_KEY`) |
 | `threshold` | `0.8` | min pass rate to pass the gate (0 = no gating) |
-| `allow_local` | `false` | set `true` when `model_url` is a private/self-hosted endpoint (LAN, 127.0.0.1) — the API blocks private IPs by default (SSRF guard) |
+| `allow_local` | `false` | **deprecated** — since API 0.0.8 the private/loopback SSRF policy is set server-side (`EVALDIFF_ALLOW_LOCAL_ENDPOINTS` env, deployment-admin decision). Input kept for compatibility; ignored. |
 | `timeout_seconds` | `600` | max wait for the run |
 | `fail_on_regressions` | `false` | also fail when the run scores below the account's best prior run |
 
